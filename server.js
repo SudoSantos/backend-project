@@ -1,9 +1,16 @@
 const express = require("express");
+const db = require("better-sqlite3")("ourApp.db");
+db.pragma("journal_mode = WAL")
 const app = express();
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static("public"));
+
+app.use(function(req, res, next){
+  res.locals.errors = [];
+  next()
+})
 
 app.get("/", (req, res) => {
   res.render("homepage");
@@ -22,18 +29,26 @@ app.post("/register", (req, res) => {
 
   if (!req.body.username) errors.push("You must provide a username.");
   if (req.body.username.length && req.body.username.length < 3)
-    errors.push("Username must be more than 3 characters.");
+    errors.push("Username must be at least 3 characters.");
   if (req.body.username.length && req.body.username.length > 10)
     errors.push("Username should not be more than 10 characters.");
   if (req.body.username && !req.body.username.match(/^[a-zA-Z0-9]+$/)) errors.push("Usernames can only contain letters and numbers");
 
+
+  if (!req.body.password) errors.push("You must provide a password.");
+  if (req.body.password.lengthreq.body.password.length < 6)
+    errors.push("Password must be at least 6 characters.");
+  if (req.body.password.length && req.body.password.length > 20)
+    errors.push("Password should not exceed 20 characters.");
+
   if (errors.length){
     return res.render("homepage", {errors})
-  }else{
-    res.send("Thank you for filling out the form.")
   }
 
-  res.send("Thank you for filling out the form");
+  //After successful user registration
+  // 1. save the new user into a database
+
+  // 2. log the user in by giving them a cookie
 });
 
 app.listen(3000);
